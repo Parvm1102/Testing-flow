@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Node / frontend build (the Docker image rebuilds these in a clean stage)
+app/frontend/node_modules/
+app/frontend/dist/
+
+# Heavy data that the DEMO does not need at runtime (and is large / regenerable):
+# the raw event log and the training-only text embeddings.
+data/raw/
+data/processed/*
+!data/processed/history.parquet        # <- required by the inference feature pipeline
+*.npy
+*.csv
+
+# Logs
+reports/*.log
+
+# OS / editor
+.DS_Store
+.ipynb_checkpoints/
+
+# NOTE: the trained model + hotspot artifacts (models/*.joblib,
+# hotspot_artifacts/*, reports/figures/*.png, app/backend/generated/*.json) are
+# tracked ON PURPOSE — the Docker image and the Hugging Face Space build from
+# them. They total ~24 MB with no single file over the 10 MB Git LFS threshold,
+# so a plain `git add -A` is enough (no LFS required).
+

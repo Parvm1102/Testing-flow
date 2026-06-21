@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* ---- Dark theme (default) ---------------------------------------- */
+  :root,
+  .dark {
+    --background: 222 24% 7%;
+    --foreground: 213 31% 91%;
+
+    --card: 222 22% 10%;
+    --card-foreground: 213 31% 91%;
+
+    --popover: 222 26% 9%;
+    --popover-foreground: 213 31% 91%;
+
+    --primary: 168 84% 42%;
+    --primary-foreground: 222 47% 8%;
+
+    --secondary: 217 19% 17%;
+    --secondary-foreground: 213 31% 91%;
+
+    --muted: 217 19% 15%;
+    --muted-foreground: 215 16% 60%;
+
+    --accent: 199 89% 48%;
+    --accent-foreground: 222 47% 8%;
+
+    --success: 152 60% 45%;
+    --warning: 38 92% 55%;
+    --danger: 0 72% 58%;
+
+    --border: 217 19% 18%;
+    --input: 217 19% 20%;
+    --ring: 168 84% 42%;
+
+    --radius: 0.7rem;
+  }
+
+  /* ---- Light theme (future-ready: add `light` class to <html>) ------ */
+  .light {
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 168 84% 36%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 214 32% 91%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 214 32% 93%;
+    --muted-foreground: 215 16% 40%;
+    --accent: 199 89% 44%;
+    --accent-foreground: 0 0% 100%;
+    --success: 152 55% 38%;
+    --warning: 32 92% 45%;
+    --danger: 0 72% 48%;
+    --border: 214 32% 88%;
+    --input: 214 32% 86%;
+    --ring: 168 84% 36%;
+  }
+
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer utilities {
+  .glass {
+    background: hsl(var(--card) / 0.7);
+    backdrop-filter: blur(12px);
+  }
+  .grid-bg {
+    background-image: radial-gradient(
+      hsl(var(--border) / 0.5) 1px,
+      transparent 1px
+    );
+    background-size: 22px 22px;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* ---- Leaflet dark-map polish --------------------------------------- */
+.leaflet-container {
+  background: hsl(var(--background));
+  font-family: inherit;
+}
+.leaflet-bar,
+.leaflet-bar a {
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  border-color: hsl(var(--border)) !important;
+}
+.leaflet-bar a:hover {
+  background: hsl(var(--secondary));
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: hsl(var(--popover));
+  color: hsl(var(--popover-foreground));
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px hsl(222 47% 2% / 0.5);
+}
+.leaflet-popup-content {
+  margin: 0.85rem 1rem;
+  font-size: 0.8rem;
+}
+.leaflet-control-attribution {
+  background: hsl(var(--card) / 0.7) !important;
+  color: hsl(var(--muted-foreground)) !important;
+}
+.leaflet-control-attribution a {
+  color: hsl(var(--accent)) !important;
+}

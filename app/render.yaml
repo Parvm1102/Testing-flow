@@ -1,0 +1,30 @@
+# Render Blueprint — deploys the Gridlock demo as a single Docker web service.
+#
+# Usage:
+#   1. Push this repo to GitHub/GitLab.
+#   2. In Render: New + > Blueprint > pick this repo. Render reads this file.
+#   3. Deploy. The image builds the frontend and serves it with the API on $PORT.
+#
+# NOTE ON PLAN: the image bundles PyTorch + a sentence-transformer + three
+# gradient-boosting libraries. Inference needs ~1.5–2 GB RAM, so the free 512 MB
+# instance will OOM on the first /api/predict. Use the Standard plan (2 GB).
+services:
+  - type: web
+    name: gridlock-demo
+    runtime: docker
+    plan: standard            # 2 GB RAM; "free"/"starter" (512 MB) will OOM on predict
+    dockerfilePath: Dockerfile
+    dockerContext: .          # build from repo root so src/ + models/ are in context
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: "8000"
+      # Model is baked into the image; never reach out to Hugging Face at runtime.
+      - key: HF_HUB_OFFLINE
+        value: "1"
+      - key: TRANSFORMERS_OFFLINE
+        value: "1"
+      # Keep tokenizer threads predictable on small instances.
+      - key: TOKENIZERS_PARALLELISM
+        value: "false"

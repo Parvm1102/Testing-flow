@@ -1,0 +1,30 @@
+# Keep the Docker build context small. Only inference artifacts + app code ship.
+.git
+.gitignore
+.venv
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+**/.ipynb_checkpoints/
+
+# Frontend build leftovers (the image rebuilds these in a clean node stage)
+app/frontend/node_modules
+app/frontend/dist
+
+# Heavy / training-only data the runtime never reads
+data/raw
+data/processed/events_clean.parquet
+data/processed/features.parquet
+data/processed/text_embeddings.npy
+data/processed/text_embeddings_*.npy
+*.csv
+Astram*.csv
+
+# Notebooks, docs, local tooling
+*.ipynb
+.vscode
+.idea
+.DS_Store
+
+# Memory / scratch
+/memories

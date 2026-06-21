@@ -1,0 +1,76 @@
+{
+  "target": ">= 2 future events within 14d at a ~110m cell",
+  "n_labelable": 6914,
+  "positive_rate": 0.14087358981776107,
+  "deployed_threshold": 0.07140703517587939,
+  "test": {
+    "n": 1383,
+    "base_rate": 0.1561822125813449,
+    "average_precision": 0.4410683148723949,
+    "roc_auc": 0.7904388428702912,
+    "brier": 0.10573910023997314,
+    "threshold": 0.07140703517587939,
+    "precision": 0.2589041095890411,
+    "recall": 0.875,
+    "f1": 0.39957716701902746,
+    "mcc": 0.29917668590912727,
+    "precision_lift_over_base": 1.6577054794520547,
+    "confusion": {
+      "tn": 626,
+      "fp": 541,
+      "fn": 27,
+      "tp": 189
+    }
+  },
+  "test_operating_points": {
+    "mcc_optimal": {
+      "threshold": 0.13753768844221106,
+      "precision": 0.41423948220064727,
+      "recall": 0.5925925925925926,
+      "mcc": 0.3812879439756042,
+      "f2": 0.545609548167093
+    },
+    "f2_optimal": {
+      "threshold": 0.07140703517587939,
+      "precision": 0.2589041095890411,
+      "recall": 0.875,
+      "mcc": 0.29917668590912727,
+      "f2": 0.5928481806775407
+    },
+    "recall>=0.7": {
+      "threshold": 0.07140703517587939,
+      "precision": 0.2589041095890411,
+      "recall": 0.875,
+      "mcc": 0.29917668590912727,
+      "f2": 0.5928481806775407
+    }
+  },
+  "cold_start_test": {
+    "n": 383,
+    "n_pos": 6,
+    "base_rate": 0.015665796344647518
+  },
+  "top_features": {
+    "junc_win30": 377,
+    "zone_win30": 367,
+    "ps_win30": 339,
+    "police_station": 317,
+    "latitude": 315,
+    "longitude": 304,
+    "loc_days_since_first": 287,
+    "loc_days_since_last": 226,
+    "desc_len": 225,
+    "area_to_loc_ratio": 223,
+    "loc_rate_per_day": 205,
+    "area_prior_count": 202,
+    "area_win30": 173,
+    "hour": 163,
+    "junction": 160,
+    "weekofyear": 148,
+    "hour_cos": 144,
+    "area_win7": 141,
+    "hour_sin": 131,
+    "corridor": 107
+  },
+  "best_iteration": 188
+}
