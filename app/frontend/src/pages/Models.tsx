@@ -46,10 +46,10 @@ function Hero({
   badge?: { text: string; variant: "success" | "warning" | "danger" | "accent" };
 }) {
   return (
-    <div className="flex flex-col justify-between gap-3 rounded-xl border border-border bg-gradient-to-br from-card to-secondary/30 p-5 sm:flex-row sm:items-center">
+    <div className="flex flex-col justify-between gap-3 rounded-lg border border-border bg-card p-5 sm:flex-row sm:items-center">
       <div>
         <div className="flex items-baseline gap-2">
-          <span className="text-4xl font-extrabold tracking-tight text-primary">
+          <span className="text-4xl font-bold tracking-tight text-primary">
             {headline}
           </span>
           {unit && <span className="text-sm text-muted-foreground">{unit}</span>}
@@ -280,7 +280,7 @@ function DurationPanel({ m }: { m: DurationMetrics }) {
         >
           <div className="flex h-[220px] flex-col items-center justify-center gap-3">
             <div className="text-center">
-              <div className="text-5xl font-extrabold text-warning">
+              <div className="text-5xl font-bold text-warning">
                 {minutesToHuman(m.median_ae_min)}
               </div>
               <div className="mt-1 text-sm text-muted-foreground">median absolute error</div>
@@ -293,7 +293,7 @@ function DurationPanel({ m }: { m: DurationMetrics }) {
                 </span>
                 <span>p90</span>
               </div>
-              <div className="h-2 w-full rounded-full bg-gradient-to-r from-warning/20 via-warning/60 to-warning/20" />
+              <div className="h-2 w-full rounded-full bg-warning/25" />
             </div>
           </div>
         </ChartCard>

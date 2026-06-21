@@ -435,7 +435,7 @@ function Results({ result }: { result: PredictResponse }) {
                   </span>
                 </InfoTip>
               </div>
-              <div className={cn("text-4xl font-extrabold capitalize", style.text)}>
+              <div className={cn("text-4xl font-bold capitalize", style.text)}>
                 {level}
               </div>
             </div>

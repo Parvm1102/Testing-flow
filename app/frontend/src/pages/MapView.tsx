@@ -5,6 +5,8 @@ import {
   CircleMarker,
   Popup,
   useMap,
+  useMapEvents,
+  ZoomControl,
 } from "react-leaflet";
 import L from "leaflet";
 import {
@@ -16,9 +18,9 @@ import {
   Crosshair,
 } from "lucide-react";
 import { api } from "@/lib/api";
-import type { AreaRow, MapData } from "@/lib/types";
+import type { AreaRow, HotspotCell, MapData } from "@/lib/types";
 import { HeatLayer } from "@/components/HeatLayer";
-import { LoadingState, ErrorState } from "@/components/ui/feedback";
+import { Spinner, ErrorState } from "@/components/ui/feedback";
 import { cn } from "@/lib/utils";
 import { pct, minutesToHuman, titleCase, num } from "@/lib/format";
 
@@ -41,17 +43,17 @@ const VIEWS: {
 ];
 
 const GRADIENTS: Record<View, Record<number, string>> = {
-  congestion: { 0.2: "#0ea5e9", 0.5: "#22d3ee", 0.8: "#a3e635", 1: "#facc15" },
-  hotspots: { 0.2: "#16c79a", 0.5: "#facc15", 0.8: "#f97316", 1: "#ef4444" },
-  closure: { 0.2: "#16c79a", 0.5: "#facc15", 0.8: "#f97316", 1: "#ef4444" },
-  manpower: { 0.2: "#22d3ee", 0.5: "#a3e635", 0.8: "#f97316", 1: "#ef4444" },
+  congestion: { 0.2: "#2f4a63", 0.45: "#3f6f93", 0.75: "#5e9cc0", 1: "#a7cfe6" },
+  hotspots: { 0.2: "#4f9e7d", 0.5: "#cfa247", 0.8: "#db8a52", 1: "#d35f55" },
+  closure: { 0.2: "#4f9e7d", 0.5: "#cfa247", 0.8: "#db8a52", 1: "#d35f55" },
+  manpower: { 0.2: "#4f8fa0", 0.5: "#5ea585", 0.8: "#db8a52", 1: "#d35f55" },
 };
 
 function riskColor(r: number): string {
-  if (r >= 0.6) return "#ef4444";
-  if (r >= 0.3) return "#f97316";
-  if (r >= 0.12) return "#facc15";
-  return "#16c79a";
+  if (r >= 0.6) return "#d35f55";
+  if (r >= 0.3) return "#db8a52";
+  if (r >= 0.12) return "#cfa247";
+  return "#4f9e7d";
 }
 
 function FitBounds({ bounds }: { bounds: MapData["bounds"] }) {
@@ -89,6 +91,113 @@ function RecenterButton({ bounds }: { bounds: MapData["bounds"] }) {
   );
 }
 
+/**
+ * Fixed pixel-radius circles render identically at every zoom, so the city
+ * overview collapses into one cluttered blob. Scaling the radius with the zoom
+ * level keeps the map tidy when zoomed out and legible when zoomed in.
+ */
+function zoomScale(zoom: number): number {
+  return Math.min(Math.max(2 ** ((zoom - 13) * 0.42), 0.5), 2.1);
+}
+
+function useZoomScale(): number {
+  const map = useMap();
+  const [zoom, setZoom] = useState(() => map.getZoom());
+  useMapEvents({ zoomend: () => setZoom(map.getZoom()) });
+  return zoomScale(zoom);
+}
+
+function HotspotMarkers({ cells }: { cells: HotspotCell[] }) {
+  const scale = useZoomScale();
+  return (
+    <>
+      {cells.map((c, i) => (
+        <CircleMarker
+          key={i}
+          center={[c.lat, c.lng]}
+          radius={Math.min(2.6 + c.count * 0.4, 11) * scale}
+          pathOptions={{
+            color: riskColor(c.max_risk),
+            fillColor: riskColor(c.max_risk),
+            fillOpacity: 0.48,
+            weight: 0.6,
+          }}
+        >
+          <Popup>
+            <div className="space-y-1">
+              <div className="text-sm font-semibold">{c.label}</div>
+              {c.junction && (
+                <div className="text-xs text-muted-foreground">
+                  {titleCase(c.junction)}
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 pt-1 text-xs">
+                <span className="text-muted-foreground">Events</span>
+                <span className="text-right font-medium">{c.count}</span>
+                <span className="text-muted-foreground">Max risk</span>
+                <span className="text-right font-medium">{pct(c.max_risk)}</span>
+                <span className="text-muted-foreground">Chronic</span>
+                <span className="text-right font-medium">{c.chronic_count}</span>
+                <span className="text-muted-foreground">Closure rate</span>
+                <span className="text-right font-medium">{pct(c.closure_rate)}</span>
+                {c.top_cause && (
+                  <>
+                    <span className="text-muted-foreground">Top cause</span>
+                    <span className="text-right font-medium">
+                      {titleCase(c.top_cause)}
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+          </Popup>
+        </CircleMarker>
+      ))}
+    </>
+  );
+}
+
+function StationMarkers({ areas }: { areas: AreaRow[] }) {
+  const scale = useZoomScale();
+  return (
+    <>
+      {areas.map((a, i) => (
+        <CircleMarker
+          key={`st-${i}`}
+          center={[a.lat, a.lng]}
+          radius={Math.min(3 + Math.sqrt(a.n_events), 13) * scale}
+          pathOptions={{
+            color: "#5e9cc0",
+            fillColor: "#5e9cc0",
+            fillOpacity: 0.14,
+            weight: 1.2,
+          }}
+        >
+          <Popup>
+            <div className="space-y-1">
+              <div className="text-sm font-semibold">{a.area}</div>
+              <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 pt-1 text-xs">
+                <span className="text-muted-foreground">Events</span>
+                <span className="text-right font-medium">{a.n_events}</span>
+                <span className="text-muted-foreground">Risk score</span>
+                <span className="text-right font-medium">{a.risk_score}</span>
+                <span className="text-muted-foreground">Closure rate</span>
+                <span className="text-right font-medium">{pct(a.closure_rate)}</span>
+                <span className="text-muted-foreground">Avg clear</span>
+                <span className="text-right font-medium">
+                  {minutesToHuman(a.avg_duration_min)}
+                </span>
+                <span className="text-muted-foreground">Avg officers</span>
+                <span className="text-right font-medium">{num(a.avg_officers, 1)}</span>
+              </div>
+            </div>
+          </Popup>
+        </CircleMarker>
+      ))}
+    </>
+  );
+}
+
 export default function MapView() {
   const [map, setMap] = useState<MapData | null>(null);
   const [areas, setAreas] = useState<AreaRow[]>([]);
@@ -119,9 +228,13 @@ export default function MapView() {
   }, [map, view]);
 
   if (error) return <ErrorState message={error} />;
-  if (!map) return <LoadingState label="Loading map…" />;
 
   const activeView = VIEWS.find((v) => v.id === view)!;
+  // Default to Bengaluru's centre so the basemap tiles can start loading before
+  // the precomputed JSON arrives — the map feels instant, data fills in after.
+  const center: [number, number] = map
+    ? [map.bounds.center_lat, map.bounds.center_lng]
+    : [12.9716, 77.5946];
 
   return (
     <div>
@@ -129,8 +242,9 @@ export default function MapView() {
         <div>
           <h1 className="text-xl font-bold tracking-tight">Bengaluru risk map</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {activeView.desc} · {map.points.length.toLocaleString()} events ·{" "}
-            {map.hotspot_cells.length.toLocaleString()} hotspot cells.
+            {activeView.desc}
+            {map &&
+              ` · ${map.points.length.toLocaleString()} events · ${map.hotspot_cells.length.toLocaleString()} hotspot cells.`}
           </p>
         </div>
         <label className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -173,115 +287,54 @@ export default function MapView() {
 
         <Legend view={view} />
 
+        {!map && (
+          <div className="absolute inset-0 z-[1100] flex items-center justify-center">
+            <div className="flex items-center gap-2 rounded-full border border-border bg-card/90 px-4 py-2 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur">
+              <Spinner className="h-3.5 w-3.5 text-primary" /> Loading map…
+            </div>
+          </div>
+        )}
+
         <MapContainer
-          center={[map.bounds.center_lat, map.bounds.center_lng]}
+          center={center}
           zoom={11}
           style={{ height: "100%", width: "100%" }}
           scrollWheelZoom
           preferCanvas
+          zoomControl={false}
         >
+          <ZoomControl position="bottomleft" />
           <TileLayer
             url={dark ? CARTO_DARK : CARTO_LIGHT}
             subdomains="abcd"
             maxZoom={19}
             attribution='&copy; OpenStreetMap &copy; CARTO'
           />
-          <FitBounds bounds={map.bounds} />
-          <RecenterButton bounds={map.bounds} />
+          {map && <FitBounds bounds={map.bounds} />}
+          {map && <RecenterButton bounds={map.bounds} />}
 
           {/* Heat views */}
-          {view !== "hotspots" && (
+          {map && view !== "hotspots" && (
             <HeatLayer
               points={heatPoints}
               gradient={GRADIENTS[view]}
-              radius={view === "congestion" ? 18 : 22}
-              blur={16}
+              radius={view === "congestion" ? 13 : 17}
+              blur={15}
               max={1}
             />
           )}
 
-          {/* Hotspot cells */}
-          {view === "hotspots" &&
-            map.hotspot_cells.slice(0, 700).map((c, i) => (
-              <CircleMarker
-                key={i}
-                center={[c.lat, c.lng]}
-                radius={Math.min(4 + c.count * 0.7, 16)}
-                pathOptions={{
-                  color: riskColor(c.max_risk),
-                  fillColor: riskColor(c.max_risk),
-                  fillOpacity: 0.55,
-                  weight: 1,
-                }}
-              >
-                <Popup>
-                  <div className="space-y-1">
-                    <div className="text-sm font-semibold">{c.label}</div>
-                    {c.junction && (
-                      <div className="text-xs text-muted-foreground">
-                        {titleCase(c.junction)}
-                      </div>
-                    )}
-                    <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 pt-1 text-xs">
-                      <span className="text-muted-foreground">Events</span>
-                      <span className="text-right font-medium">{c.count}</span>
-                      <span className="text-muted-foreground">Max risk</span>
-                      <span className="text-right font-medium">{pct(c.max_risk)}</span>
-                      <span className="text-muted-foreground">Chronic</span>
-                      <span className="text-right font-medium">{c.chronic_count}</span>
-                      <span className="text-muted-foreground">Closure rate</span>
-                      <span className="text-right font-medium">{pct(c.closure_rate)}</span>
-                      {c.top_cause && (
-                        <>
-                          <span className="text-muted-foreground">Top cause</span>
-                          <span className="text-right font-medium">
-                            {titleCase(c.top_cause)}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </Popup>
-              </CircleMarker>
-            ))}
+          {/* Hotspot cells — radius scales with zoom to stay legible */}
+          {map && view === "hotspots" && (
+            <HotspotMarkers cells={map.hotspot_cells.slice(0, 700)} />
+          )}
 
           {/* Station overlay */}
-          {showStations &&
-            areas
-              .filter((a) => a.area !== "Unknown / No Station")
-              .map((a, i) => (
-                <CircleMarker
-                  key={`st-${i}`}
-                  center={[a.lat, a.lng]}
-                  radius={Math.min(5 + Math.sqrt(a.n_events), 18)}
-                  pathOptions={{
-                    color: "#2bb7f0",
-                    fillColor: "#2bb7f0",
-                    fillOpacity: 0.18,
-                    weight: 1.5,
-                  }}
-                >
-                  <Popup>
-                    <div className="space-y-1">
-                      <div className="text-sm font-semibold">{a.area}</div>
-                      <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 pt-1 text-xs">
-                        <span className="text-muted-foreground">Events</span>
-                        <span className="text-right font-medium">{a.n_events}</span>
-                        <span className="text-muted-foreground">Risk score</span>
-                        <span className="text-right font-medium">{a.risk_score}</span>
-                        <span className="text-muted-foreground">Closure rate</span>
-                        <span className="text-right font-medium">{pct(a.closure_rate)}</span>
-                        <span className="text-muted-foreground">Avg clear</span>
-                        <span className="text-right font-medium">
-                          {minutesToHuman(a.avg_duration_min)}
-                        </span>
-                        <span className="text-muted-foreground">Avg officers</span>
-                        <span className="text-right font-medium">{num(a.avg_officers, 1)}</span>
-                      </div>
-                    </div>
-                  </Popup>
-                </CircleMarker>
-              ))}
+          {map && showStations && (
+            <StationMarkers
+              areas={areas.filter((a) => a.area !== "Unknown / No Station")}
+            />
+          )}
         </MapContainer>
       </div>
     </div>
@@ -292,30 +345,30 @@ function Legend({ view }: { view: View }) {
   const items =
     view === "hotspots"
       ? [
-          { c: "#ef4444", l: "≥60% risk" },
-          { c: "#f97316", l: "30–60%" },
-          { c: "#facc15", l: "12–30%" },
-          { c: "#16c79a", l: "<12%" },
+          { c: "#d35f55", l: "≥60% risk" },
+          { c: "#db8a52", l: "30–60%" },
+          { c: "#cfa247", l: "12–30%" },
+          { c: "#4f9e7d", l: "<12%" },
         ]
       : view === "manpower"
         ? [
-            { c: "#ef4444", l: "High demand" },
-            { c: "#f97316", l: "Medium" },
-            { c: "#a3e635", l: "Low" },
-            { c: "#22d3ee", l: "Minimal" },
+            { c: "#d35f55", l: "High demand" },
+            { c: "#db8a52", l: "Medium" },
+            { c: "#5ea585", l: "Low" },
+            { c: "#4f8fa0", l: "Minimal" },
           ]
         : view === "closure"
           ? [
-              { c: "#ef4444", l: "High" },
-              { c: "#f97316", l: "Elevated" },
-              { c: "#facc15", l: "Some" },
-              { c: "#16c79a", l: "Low" },
+              { c: "#d35f55", l: "High" },
+              { c: "#db8a52", l: "Elevated" },
+              { c: "#cfa247", l: "Some" },
+              { c: "#4f9e7d", l: "Low" },
             ]
           : [
-              { c: "#facc15", l: "Dense" },
-              { c: "#a3e635", l: "Busy" },
-              { c: "#22d3ee", l: "Moderate" },
-              { c: "#0ea5e9", l: "Sparse" },
+              { c: "#a7cfe6", l: "Dense" },
+              { c: "#5e9cc0", l: "Busy" },
+              { c: "#3f6f93", l: "Moderate" },
+              { c: "#2f4a63", l: "Sparse" },
             ];
 
   return (

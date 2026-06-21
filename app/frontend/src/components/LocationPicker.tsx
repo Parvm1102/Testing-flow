@@ -7,8 +7,8 @@ const pinIcon = L.divIcon({
   className: "",
   html: `<div style="transform:translate(-50%,-100%)">
     <svg width="26" height="34" viewBox="0 0 26 34" xmlns="http://www.w3.org/2000/svg">
-      <path d="M13 0C5.8 0 0 5.8 0 13c0 9.2 13 21 13 21s13-11.8 13-21C26 5.8 20.2 0 13 0z" fill="#16c79a"/>
-      <circle cx="13" cy="13" r="5" fill="#0c1116"/>
+      <path d="M13 0C5.8 0 0 5.8 0 13c0 9.2 13 21 13 21s13-11.8 13-21C26 5.8 20.2 0 13 0z" fill="#439878"/>
+      <circle cx="13" cy="13" r="5" fill="#0f1318"/>
     </svg></div>`,
   iconSize: [26, 34],
 });

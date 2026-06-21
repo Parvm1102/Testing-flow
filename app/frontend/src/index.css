@@ -6,60 +6,60 @@
   /* ---- Dark theme (default) ---------------------------------------- */
   :root,
   .dark {
-    --background: 222 24% 7%;
-    --foreground: 213 31% 91%;
+    --background: 214 10% 8%;
+    --foreground: 210 13% 89%;
 
-    --card: 222 22% 10%;
-    --card-foreground: 213 31% 91%;
+    --card: 214 9% 11%;
+    --card-foreground: 210 13% 89%;
 
-    --popover: 222 26% 9%;
-    --popover-foreground: 213 31% 91%;
+    --popover: 214 10% 10%;
+    --popover-foreground: 210 13% 89%;
 
-    --primary: 168 84% 42%;
-    --primary-foreground: 222 47% 8%;
+    --primary: 157 39% 43%;
+    --primary-foreground: 156 32% 9%;
 
-    --secondary: 217 19% 17%;
-    --secondary-foreground: 213 31% 91%;
+    --secondary: 214 8% 16%;
+    --secondary-foreground: 210 13% 89%;
 
-    --muted: 217 19% 15%;
-    --muted-foreground: 215 16% 60%;
+    --muted: 214 8% 14%;
+    --muted-foreground: 214 7% 58%;
 
-    --accent: 199 89% 48%;
-    --accent-foreground: 222 47% 8%;
+    --accent: 199 34% 56%;
+    --accent-foreground: 205 35% 10%;
 
-    --success: 152 60% 45%;
-    --warning: 38 92% 55%;
-    --danger: 0 72% 58%;
+    --success: 150 38% 47%;
+    --warning: 35 66% 55%;
+    --danger: 4 56% 58%;
 
-    --border: 217 19% 18%;
-    --input: 217 19% 20%;
-    --ring: 168 84% 42%;
+    --border: 214 8% 17%;
+    --input: 214 8% 19%;
+    --ring: 157 39% 43%;
 
-    --radius: 0.7rem;
+    --radius: 0.5rem;
   }
 
   /* ---- Light theme (future-ready: add `light` class to <html>) ------ */
   .light {
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
+    --background: 210 16% 98%;
+    --foreground: 215 19% 15%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 215 19% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 168 84% 36%;
+    --popover-foreground: 215 19% 15%;
+    --primary: 157 41% 34%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 214 32% 91%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 214 32% 93%;
-    --muted-foreground: 215 16% 40%;
-    --accent: 199 89% 44%;
+    --secondary: 214 16% 93%;
+    --secondary-foreground: 215 19% 20%;
+    --muted: 214 17% 95%;
+    --muted-foreground: 216 10% 42%;
+    --accent: 199 40% 40%;
     --accent-foreground: 0 0% 100%;
-    --success: 152 55% 38%;
-    --warning: 32 92% 45%;
-    --danger: 0 72% 48%;
-    --border: 214 32% 88%;
-    --input: 214 32% 86%;
-    --ring: 168 84% 36%;
+    --success: 150 42% 33%;
+    --warning: 32 66% 40%;
+    --danger: 4 56% 48%;
+    --border: 214 15% 88%;
+    --input: 214 15% 84%;
+    --ring: 157 41% 34%;
   }
 
   * {
@@ -68,6 +68,12 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    /* Barely-there dot grid adds depth without the AI neon-gradient feel. */
+    background-image: radial-gradient(
+      hsl(var(--foreground) / 0.035) 1px,
+      transparent 1px
+    );
+    background-size: 30px 30px;
   }
   html {
     scroll-behavior: smooth;
@@ -76,8 +82,9 @@
 
 @layer utilities {
   .glass {
-    background: hsl(var(--card) / 0.7);
-    backdrop-filter: blur(12px);
+    background: hsl(var(--background) / 0.8);
+    backdrop-filter: blur(10px) saturate(120%);
+    -webkit-backdrop-filter: blur(10px) saturate(120%);
   }
   .grid-bg {
     background-image: radial-gradient(
@@ -114,7 +121,7 @@
   background: hsl(var(--popover));
   color: hsl(var(--popover-foreground));
   border-radius: var(--radius);
-  box-shadow: 0 10px 30px hsl(222 47% 2% / 0.5);
+  box-shadow: 0 8px 28px hsl(220 30% 2% / 0.45);
 }
 .leaflet-popup-content {
   margin: 0.85rem 1rem;

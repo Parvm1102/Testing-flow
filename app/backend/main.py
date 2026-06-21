@@ -11,6 +11,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -30,6 +31,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Gzip large JSON payloads (map.json is ~540 KB -> ~100 KB on the wire), which
+# noticeably speeds up the first Map-tab load. Starlette ships this middleware,
+# so it needs no extra dependency (works as-is on Hugging Face / Render).
+app.add_middleware(GZipMiddleware, minimum_size=1024)
 
 _JSON_CACHE: dict[str, object] = {}
 
