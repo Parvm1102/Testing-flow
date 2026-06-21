@@ -13,7 +13,10 @@ app/frontend/dist/
 # the raw event log and the training-only text embeddings.
 data/raw/
 data/processed/*
-!data/processed/history.parquet        # <- required by the inference feature pipeline
+# history.parquet is required by the inference feature pipeline, so keep it tracked.
+# NOTE: .gitignore does NOT support inline (end-of-line) comments, so this must be
+# on its own line above the negation; otherwise the pattern fails to match.
+!data/processed/history.parquet
 *.npy
 *.csv
 
