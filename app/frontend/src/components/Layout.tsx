@@ -28,7 +28,7 @@ function Logo() {
       </svg>
       <div className="leading-none">
         <div className="text-sm font-bold tracking-tight text-foreground">
-          Gridlock
+          Testing-Flow
         </div>
         <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
           Traffic Intelligence
@@ -109,7 +109,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <footer className="border-t border-border py-5">
         <div className="container flex flex-col items-center justify-between gap-2 text-xs text-muted-foreground sm:flex-row">
           <span>
-            Gridlock — leakage-controlled forecasts on 8,057 Bengaluru traffic
+            Testing-Flow — leakage-controlled forecasts on 8,057 Bengaluru traffic
             events (Nov 2023 – Apr 2024).
           </span>
           <span className="font-mono">closure · priority · duration · hotspot · manpower</span>
